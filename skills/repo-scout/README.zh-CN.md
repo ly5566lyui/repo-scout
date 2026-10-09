@@ -2,11 +2,12 @@
 
 > 🌐 **中文** · [English](README.md)
 
-用一组**免费在线网页服务**，把任意公开 GitHub 仓库快速转化为可用的调研结论——评估活跃度与维护风险、生成架构图、提取 AI 友好代码素材，并按固定结构输出报告。
+**几分钟看懂一个陌生的公开 GitHub 仓库——活跃度、架构、AI 友好素材，全程只用免费在线服务。**
 
-全程走网页服务，**无需本地安装任何工具、无需 API key**。核心技巧是把仓库链接里的 `github.com` 替换成对应服务的域名。
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Agent Skills](https://img.shields.io/badge/Agent%20Skills-compatible-blueviolet.svg)](https://agentskills.io)
 
-> 本技能遵循开放的 **Agent Skills** 标准（[agentskills.io](https://agentskills.io)），是一个通用的 `SKILL.md` 文件夹，可用于 Claude Code、Cursor、Codex、Gemini CLI、OpenCode、VS Code / Copilot、Windsurf、Cline、Roo Code 等 **25+ 种 AI agent**，不绑定任何单一平台。
+> 本技能遵循开放的 **Agent Skills** 标准（[agentskills.io](https://agentskills.io)），是一个可移植的 `SKILL.md` 文件夹，可用于 Claude Code、Cursor、Codex、Gemini CLI、OpenCode、VS Code / Copilot、Windsurf、Cline、Roo Code 等 **25+ 种 AI agent**，不绑定任何单一平台。
 
 ## 它解决什么问题
 
@@ -16,7 +17,17 @@
 - 整体架构怎么分？核心代码在哪？
 - 仓库太大，素材怎么喂给 LLM 才不爆上下文？
 
-repo-scout 把这些拆成**五阶段流水线**，每阶段用最合适的免费网页服务解决，并内置回退链保证流程不卡死：
+repo-scout 把这些从"临时抓瞎"变成一套可复用的流程。全程走网页服务，**无需本地安装、无需 API Key**。核心技巧是把仓库链接里的 `github.com` 替换成对应服务的域名。
+
+## 为什么选 repo-scout
+
+- **跨 agent 通用** —— 一份 `SKILL.md`，跑在 25+ 种实现同一开放标准的 agent 上，装一次到处能用。
+- **零配置** —— 不用装 CLI、不用管 token、不用注册。
+- **天生抗故障** —— 每个阶段都有回退链，另有"无浏览器"时走 GitHub REST API 的数据通道，遇到限流或抽风也能跑完。
+- **控 token** —— 面对 monorepo 只提核心目录并报告 token 占用，不爆上下文。
+- **输出稳定** —— 永远是固定的五段结构，便于对比与自动化。
+
+## 五阶段流水线
 
 | 阶段 | 做什么 | 用什么 |
 | --- | --- | --- |
@@ -28,19 +39,32 @@ repo-scout 把这些拆成**五阶段流水线**，每阶段用最合适的免�
 
 DeepWiki 命中现成 wiki 时可短路，直接跳过阶段 2、3。
 
-## 目录结构
+## 实战示例
 
-```
-skills/repo-scout/
-├── SKILL.md                  # 主文件：frontmatter + 五阶段工作流 + 输出契约
-├── references/
-│   ├── tools.md              # 工具用法、替换规则、限制与回退链
-│   └── extraction.md         # monorepo 提取策略与 token 控制
-├── evals/
-│   └── evals.json            # 行为评估用例（可选的自动化测试）
-├── README.md                 # 英文 README
-├── README.zh-CN.md           # 本文件（中文）
-└── LICENSE                   # MIT
+提问：*"调研一下 https://github.com/pallets/flask，它活跃吗？架构怎么分？核心代码在哪？"*
+
+技能会产出类似这样的报告：
+
+```markdown
+## 1. 项目定位
+Flask —— Pallets 出品的 Python 轻量 WSGI Web 框架。依赖 werkzeug、jinja2、click。
+
+## 2. 架构要点
+分三层：`src/flask/sansio/`（无 IO 核心，被 Quart 复用）→ `src/flask/*.py`
+（WSGI 运行时）→ `src/flask/json/`。`Scaffold → App → Flask` 的继承链承载路由、
+配置与 WSGI 调用路径。
+
+## 3. 关键目录
+- src/flask/app.py        —— Flask 主类、请求分发、WSGI __call__
+- src/flask/sansio/       —— 共享的无 IO 核心
+- src/flask/ctx.py        —— 应用/请求上下文
+
+## 4. 活跃度与风险
+最近提交在 24 小时内；最新发版约 7 个月前；未关闭 issue 仅 4 个。
+活跃但节奏偏慢；bus factor 集中在单一维护者。
+
+## 5. 建议后续动作
+生产环境钉到最新 tag（3.1.3）；先读 docs/design.rst，再按顺序读上述四个关键文件。
 ```
 
 ## 安装
@@ -119,9 +143,31 @@ Windsurf、部分 Copilot 版本等若不原生支持 skills，可把 `SKILL.md`
 
 详细用法、限制与回退链见 [`references/tools.md`](references/tools.md)；monorepo 提取策略见 [`references/extraction.md`](references/extraction.md)。
 
+> 各工具的替换规则并不统一（uithub 换首字母、gitdiagram/gitingest 换 `hub`、GitHub1s 整体换域名），技能会逐个核对，而不是套用同一条规则。
+
 ## 评估
 
 `evals/evals.json` 收录了行为评估用例（技能应产出什么样的结论）。可用任意支持技能评估的流程跑"有技能 vs 无技能"对比，验证技能确实提升了输出质量。触发准确性（description 是否被正确匹配）可用 [agentskills.io 的描述优化指南](https://agentskills.io/skill-creation/optimizing-descriptions) 里的方法系统性测试。
+
+## 常见问题与排错
+
+**某个服务取不到内容 / 像是挂了。**
+有时会这样——这些是免费服务，有匿名额度限制，且部分靠客户端 JS 渲染。技能的回退链会顶上；实在都不行时，会退回 GitHub REST API（`api.github.com`），公开仓库无需鉴权。
+
+**一定要有浏览器吗？**
+不一定。真正的浏览器对 JS 渲染类服务效果最好，但只有静态抓取能力的 agent 也能靠 API 回退跑通（阶段 2、3 会优雅降级）。
+
+**能调研私有仓库吗？**
+不能——仅限公开仓库，私有仓库与需登录页面明确不在范围内。
+
+**架构图看着不准。**
+gitdiagram 的图由 LLM 生成，可能失真。阶段 4（用 GitHub1s 读原始代码）才是事实来源，把图当作线索即可。
+
+## 路线图
+
+- [ ] 可选 GitHub token 模式，提高限额并支持私有仓库。
+- [ ] 提供 `--json` 输出契约，方便机器消费。
+- [ ] 接入更多工具与回退数据源。
 
 ## 已知限制
 
@@ -129,6 +175,10 @@ Windsurf、部分 Copilot 版本等若不原生支持 skills，可把 `SKILL.md`
 - 免费服务有匿名额度限制，可能遇到限流；技能内置回退链兜底。
 - gitdiagram 架构图由 LLM 生成，可能失真，关键结论以阶段 4 的原始代码核对为准。
 - 第三方服务可能变更或消失；回退链已尽力兜底，但建议定期复查各链接是否可用。
+
+## 贡献
+
+欢迎贡献——见仓库的 [CONTRIBUTING.zh-CN.md](https://github.com/ly5566lyui/repo-scout/blob/main/CONTRIBUTING.zh-CN.md)。
 
 ## 许可证
 
