@@ -1,0 +1,28 @@
+{
+  "skill_name": "repo-scout",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "调研一下这个仓库：https://github.com/pallets/flask —— 我想知道它活不活跃、架构大概怎么分、关键代码在哪。",
+      "expected_output": "一份结构化调研结论，包含：项目定位、架构要点、关键目录、活跃度与风险、建议后续动作；并注明所用的在线工具来源。",
+      "files": [],
+      "expectations": [
+        "输出包含五个固定小节：项目定位、架构要点、关键目录、活跃度与风险、建议后续动作",
+        "使用了活跃度工具（star-history）或明确指出活跃度判断依据",
+        "给出至少一个关键目录/模块作为阶段 3 的输入",
+        "末尾附有工具来源致谢行"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "帮我快速理解 https://github.com/tiangolo/fastapi 这个项目的架构和核心目录，并给出一份结构化调研结论。",
+      "expected_output": "一份结构化调研结论，遵循 repo-scout 的输出契约（项目定位/架构要点/关键目录/活跃度与风险/建议后续动作）。",
+      "files": [],
+      "expectations": [
+        "输出遵循 repo-scout 的五段式输出契约",
+        "提到架构认知的工具（gitdiagram 或 DeepWiki）",
+        "没有承诺修改仓库或访问私有仓库等超出技能范围的动作"
+      ]
+    }
+  ]
+}
